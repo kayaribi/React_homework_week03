@@ -1,10 +1,8 @@
 import { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import { Modal } from 'bootstrap';
-
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const API_PATH = import.meta.env.VITE_API_PATH;
-
 const defaultModalState = {
   imageUrl: "",
   title: "",
@@ -17,26 +15,20 @@ const defaultModalState = {
   is_enabled: 0,
   imagesUrl: [""]
 };
-
 function App() {
   const [isAuth, setIsAuth] = useState(false);
-
   const [products, setProducts] = useState([]);
-
   const [account, setAccount] = useState({
     username: "example@test.com",
     password: "example",
   });
-
   const handleInputChange = (e) => {
     const { value, name } = e.target;
-
     setAccount({
       ...account,
       [name]: value,
     });
   };
-
   const getProducts = async () => {
     try {
       const res = await axios.get(
@@ -47,26 +39,19 @@ function App() {
       alert("取得產品失敗");
     }
   };
-
   const handleLogin = async (e) => {
     e.preventDefault();
-
     try {
       const res = await axios.post(`${BASE_URL}/v2/admin/signin`, account);
-
       const { token, expired } = res.data;
       document.cookie = `hexToken=${token}; expires=${new Date(expired)}`;
-
       axios.defaults.headers.common["Authorization"] = token;
-
       getProducts();
-
       setIsAuth(true);
     } catch (error) {
       alert("登入失敗");
     }
   };
-
   const checkUserLogin = async () => {
     try {
       await axios.post(`${BASE_URL}/v2/api/user/check`);
@@ -77,58 +62,44 @@ function App() {
     }
   };
   useEffect(() => {
-
     const token = document.cookie.replace(
       /(?:(?:^|.*;\s*)hexToken\s*\=\s*([^;]*).*$)|^.*$/,
       "$1",
     );
-
     axios.defaults.headers.common['Authorization'] = token;
     checkUserLogin();
   }, [])
-
   const productModalRef = useRef(null);
   const delProductModalRef = useRef(null);
   const [modalMode, setModalMode] = useState(null)
-
   useEffect(() => {
     new Modal(productModalRef.current, { backdrop: false })
-
     new Modal(delProductModalRef.current, { backdrop: false })
-
   }, [])
-
   const handleOpenProductModal = (mode, product) => {
     setModalMode(mode);
-
     if (mode === 'create') {
       setTempProduct(defaultModalState)
     } else {
       setTempProduct(product)
     }
-
     const modalInstance = Modal.getInstance(productModalRef.current);
     modalInstance.show();
   }
-
   const handleCloseProductModal = () => {
     const modalInstance = Modal.getInstance(productModalRef.current);
     modalInstance.hide();
   }
-
   const handleOpenDelProductModal = (product) => {
     setTempProduct(product)
     const modalInstance = Modal.getInstance(delProductModalRef.current);
     modalInstance.show();
   }
-
   const handleCloseDelProductModal = () => {
     const modalInstance = Modal.getInstance(delProductModalRef.current);
     modalInstance.hide();
   }
-
   const [tempProduct, setTempProduct] = useState(defaultModalState);
-
   const handleModalInputChange = (e) => {
     const { value, name, checked, type } = e.target;
     setTempProduct({
@@ -136,40 +107,30 @@ function App() {
       [name]: type === "checkbox" ? checked : value
     })
   }
-
   const handleImageChange = (e, index) => {
     const { value } = e.target;
     const newImages = [...tempProduct.imagesUrl];
-
     newImages[index] = value;
-
     setTempProduct({
       ...tempProduct,
       imagesUrl: newImages
     })
   }
-
   const handleAddImage = () => {
     const newImages = [...tempProduct.imagesUrl, ''];
-
     setTempProduct({
       ...tempProduct,
       imagesUrl: newImages
     })
   }
-
-
   const handleRemoveImage = () => {
     const newImages = [...tempProduct.imagesUrl];
-
     newImages.pop()
-
     setTempProduct({
       ...tempProduct,
       imagesUrl: newImages
     })
   }
-
   const createProduct = async () => {
     try {
       await axios.post(`${BASE_URL}/v2/api/${API_PATH}/admin/product`, {
@@ -184,20 +145,16 @@ function App() {
       alert('新增產品失敗')
     }
   }
-
   const handleUpdateProduct = async () => {
     const apiCall = modalMode === 'create' ? createProduct : updateProduct
-
     try {
       await apiCall()
-
       getProducts();
       handleCloseProductModal()
     } catch (error) {
       alert('更新產品失敗')
     }
   }
-
   const updateProduct = async () => {
     try {
       await axios.put(`${BASE_URL}/v2/api/${API_PATH}/admin/product/${tempProduct.id}`, {
@@ -212,7 +169,6 @@ function App() {
       alert('編輯產品失敗')
     }
   }
-
   const deleteProduct = async () => {
     try {
       await axios.delete(`${BASE_URL}/v2/api/${API_PATH}/admin/product/${tempProduct.id}`, {
@@ -227,19 +183,15 @@ function App() {
       alert('刪除產品失敗')
     }
   }
-
   const handleDeleteProduct = async () => {
     try {
       await deleteProduct()
-
       getProducts()
-
       handleCloseDelProductModal()
     } catch (error) {
       alert('刪除產品失敗')
     }
   }
-
   return (
     <>
       {isAuth ? (
@@ -314,7 +266,6 @@ function App() {
         </div>
       )
       }
-
       <div ref={productModalRef} id="productModal" className="modal" style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
         <div className="modal-dialog modal-dialog-centered modal-xl">
           <div className="modal-content border-0 shadow">
@@ -322,7 +273,6 @@ function App() {
               <h5 className="modal-title fs-4">{modalMode === 'create' ? '新增產品' : '編輯產品'}</h5>
               <button onClick={handleCloseProductModal} type="button" className="btn-close" aria-label="Close"></button>
             </div>
-
             <div className="modal-body p-4">
               <div className="row g-4">
                 <div className="col-md-4">
@@ -347,7 +297,6 @@ function App() {
                       className="img-fluid"
                     />
                   </div>
-
                   {/* 副圖 */}
                   <div className="border border-2 border-dashed rounded-3 p-3">
                     {tempProduct.imagesUrl?.map((image, index) => (
@@ -377,12 +326,10 @@ function App() {
                     ))}
                     <div className="btn-group w-100">
                       {tempProduct.imagesUrl.length < 5 && tempProduct.imagesUrl[tempProduct.imagesUrl.length - 1] != '' && (<button onClick={handleAddImage} className="btn btn-outline-primary btn-sm w-100">新增圖片</button>)}
-
                       {tempProduct.imagesUrl.length > 1 && (<button onClick={handleRemoveImage} className="btn btn-outline-danger btn-sm w-100">取消圖片</button>)}
                     </div>
                   </div>
                 </div>
-
                 <div className="col-md-8">
                   <div className="mb-3">
                     <label htmlFor="title" className="form-label">
@@ -398,7 +345,6 @@ function App() {
                       placeholder="請輸入標題"
                     />
                   </div>
-
                   <div className="mb-3">
                     <label htmlFor="category" className="form-label">
                       分類
@@ -413,7 +359,6 @@ function App() {
                       placeholder="請輸入分類"
                     />
                   </div>
-
                   <div className="mb-3">
                     <label htmlFor="unit" className="form-label">
                       單位
@@ -428,7 +373,6 @@ function App() {
                       placeholder="請輸入單位"
                     />
                   </div>
-
                   <div className="row g-3 mb-3">
                     <div className="col-6">
                       <label htmlFor="origin_price" className="form-label">
@@ -459,7 +403,6 @@ function App() {
                       />
                     </div>
                   </div>
-
                   <div className="mb-3">
                     <label htmlFor="description" className="form-label">
                       產品描述
@@ -474,7 +417,6 @@ function App() {
                       placeholder="請輸入產品描述"
                     ></textarea>
                   </div>
-
                   <div className="mb-3">
                     <label htmlFor="content" className="form-label">
                       說明內容
@@ -489,7 +431,6 @@ function App() {
                       placeholder="請輸入說明內容"
                     ></textarea>
                   </div>
-
                   <div className="form-check">
                     <input
                       checked={tempProduct.is_enabled}
@@ -506,7 +447,6 @@ function App() {
                 </div>
               </div>
             </div>
-
             <div className="modal-footer border-top bg-light">
               <button onClick={handleCloseProductModal} type="button" className="btn btn-secondary">
                 取消
@@ -518,7 +458,6 @@ function App() {
           </div>
         </div>
       </div>
-
       <div
         ref={delProductModalRef}
         className="modal fade"
@@ -559,5 +498,4 @@ function App() {
     </>
   );
 }
-
 export default App;
